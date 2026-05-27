@@ -3,7 +3,7 @@
 > **⚠️ Unfinished — use at your own risk.**
 > This template relies on `sed`-based string manipulation of several files and may break if the included workflows or NixOS config files are renamed or restructured.
 > It is intended for personal projects and has only been tested with Hetzner Cloud VPSs. Other providers may require changes to `disk-config.nix`.
-> Environment names must be 1-63 characters of letters, digits, or hyphens (e.g. "dev", "staging", "prod"). Workflows now validate this.
+> Environment names must be 1-63 characters of letters, digits, or hyphens, and must start/end with a letter or digit (e.g. "dev", "staging", "prod"). Workflows now validate this.
 
 A template for deploying [NixOS](https://nixos.org/) to a remote server using [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), with secrets managed by [agenix](https://github.com/ryantm/agenix) and CI/CD powered by GitHub Actions.
 
@@ -131,7 +131,7 @@ In your GitHub repository, go to **Settings → Secrets and variables → Action
 
 ### 3. Create a GitHub environment for your host
 
-Go to **Settings → Environments** and create a new environment. The environment name becomes the hostname of the deployed machine and must be 1-63 characters of letters, digits, or hyphens.
+Go to **Settings → Environments** and create a new environment. The environment name becomes the hostname of the deployed machine and must be 1-63 characters of letters, digits, or hyphens (starting/ending with a letter or digit).
 
 Add the following secret to the environment:
 
