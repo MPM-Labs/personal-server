@@ -100,8 +100,8 @@ jobs:
           ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           set -euo pipefail
-          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\${vars\.//; s/}$//' | sort -u || true)
-          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\${secrets\.//; s/}$//' | sort -u || true)
+          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{vars\.//; s/\}$//' | sort -u || true)
+          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{secrets\.//; s/\}$//' | sort -u || true)
           missing=0
           for key in $required_vars; do
             value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_VARS")

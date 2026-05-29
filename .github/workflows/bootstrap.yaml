@@ -28,6 +28,8 @@ jobs:
           SSH_ROOT_KEY: ${{ secrets.SSH_ROOT_KEY }}
           IP_ADDRESS: ${{ secrets.IP_ADDRESS }}
           SSH_AGENIX_KEY: ${{ secrets.SSH_AGENIX_KEY }}
+          ALL_VARS: ${{ toJSON(vars) }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           set -euo pipefail
           if [[ ! "$TARGET_HOST" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
@@ -57,6 +59,26 @@ jobs:
               exit 1
             fi
           done
+          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{vars\.//; s/\}$//' | sort -u || true)
+          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{secrets\.//; s/\}$//' | sort -u || true)
+          missing=0
+          for key in $required_vars; do
+            value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_VARS")
+            if [[ -z "$value" ]]; then
+              echo "ERROR: Missing environment variable '$key' referenced in deployment/.env.template."
+              missing=1
+            fi
+          done
+          for key in $required_secrets; do
+            value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_SECRETS")
+            if [[ -z "$value" ]]; then
+              echo "ERROR: Missing secret '$key' referenced in deployment/.env.template."
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
           host_dir="deployment/modules/hosts/$TARGET_HOST"
           if [[ -e "$host_dir" ]]; then
             echo "ERROR: Host '$TARGET_HOST' already exists. Bootstrap should only run once per host."
@@ -142,8 +164,8 @@ jobs:
           ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           set -euo pipefail
-          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\${vars\.//; s/}$//' | sort -u || true)
-          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\${secrets\.//; s/}$//' | sort -u || true)
+          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{vars\.//; s/\}$//' | sort -u || true)
+          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{secrets\.//; s/\}$//' | sort -u || true)
           missing=0
           for key in $required_vars; do
             value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_VARS")
