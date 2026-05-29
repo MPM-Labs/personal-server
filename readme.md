@@ -3,7 +3,7 @@
 > **⚠️ Unfinished — use at your own risk.**
 > This template relies on `sed`-based string manipulation of several files and may break if the included workflows or NixOS config files are renamed or restructured.
 > It is intended for personal projects and has only been tested with Hetzner Cloud VPSs. Other providers may require changes to `disk-config.nix`.
-> Some environment names are invalid. This is unchecked. names like "dev", "staging" and "prod" are valid.
+> Environment names must be 1-63 characters of letters, digits, or hyphens, and must start/end with a letter or digit (e.g. "dev", "staging", "prod"). Workflows now validate this.
 
 A template for deploying [NixOS](https://nixos.org/) to a remote server using [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), with secrets managed by [agenix](https://github.com/ryantm/agenix) and CI/CD powered by GitHub Actions.
 
@@ -131,7 +131,7 @@ In your GitHub repository, go to **Settings → Secrets and variables → Action
 
 ### 3. Create a GitHub environment for your host
 
-Go to **Settings → Environments** and create a new environment. The environment name becomes the hostname of the deployed machine.
+Go to **Settings → Environments** and create a new environment. The environment name becomes the hostname of the deployed machine and must be 1-63 characters of letters, digits, or hyphens (starting/ending with a letter or digit).
 
 Add the following secret to the environment:
 
@@ -139,7 +139,7 @@ Add the following secret to the environment:
 |--------|-------------|
 | `IP_ADDRESS` | The IPv4 address of the target server. IPv6 is not supported. |
 
-Add any additional variables or secrets referenced by your `.env.template` (see [Configuring Environment Variables](#configuring-environment-variables)).
+Add any additional variables or secrets referenced by your `.env.template` (see [Configuring Environment Variables](#configuring-environment-variables)). The workflows will fail if any referenced values are missing.
 
 ### 4. Prepare your server
 
@@ -187,6 +187,7 @@ The `.env.template` file defines the environment variables that will be availabl
 
 - `${vars.VAR_NAME}` is replaced with the value of the GitHub environment **variable** named `VAR_NAME`.
 - `${secrets.SECRET_NAME}` is replaced with the value of the GitHub environment **secret** named `SECRET_NAME`.
+- The workflows validate that every referenced variable and secret is present before encrypting secrets.
 
 The rendered `.env` file is encrypted with agenix and made available on the deployed host at:
 
