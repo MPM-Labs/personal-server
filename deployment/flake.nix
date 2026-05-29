@@ -8,6 +8,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:vic/import-tree";
     agenix.url = "github:ryantm/agenix";
+    portfolio.url = "github:MPM-Labs/portfolio";
   };
 
   outputs = inputs:
