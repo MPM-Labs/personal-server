@@ -14,7 +14,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: ${{ inputs.environment }}
     env:
       TARGET_HOST: ${{ inputs.environment }}
@@ -22,41 +22,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate inputs and host state
-        env:
-          TARGET_HOST: ${{ inputs.environment }}
-          SSH_ROOT_KEY: ${{ secrets.SSH_ROOT_KEY }}
-          IP_ADDRESS: ${{ secrets.IP_ADDRESS }}
-          SSH_AGENIX_KEY: ${{ secrets.SSH_AGENIX_KEY }}
+      - name: Check required vars and secrets
+        uses: ./.github/actions/check-vars
+        with:
+          target-host: ${{ inputs.environment }}
+          ssh-root-key: ${{ secrets.SSH_ROOT_KEY }}
+          ssh-agenix-key: ${{ secrets.SSH_AGENIX_KEY }}
+          ip-address: ${{ secrets.IP_ADDRESS }}
+          vars-json: ${{ toJSON(vars) }}
+          secrets-json: ${{ toJSON(secrets) }}
+
+      - name: Validate host state
         run: |
           set -euo pipefail
-          if [[ ! "$TARGET_HOST" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
-            echo "ERROR: Environment name '$TARGET_HOST' is invalid. Use 1-63 letters, digits, or hyphens starting/ending with a letter or digit."
-            exit 1
-          fi
-          if [[ -z "$SSH_ROOT_KEY" ]]; then
-            echo "ERROR: SSH_ROOT_KEY secret is missing or empty."
-            exit 1
-          fi
-          if [[ -z "$SSH_AGENIX_KEY" ]]; then
-            echo "ERROR: SSH_AGENIX_KEY secret is missing or empty."
-            exit 1
-          fi
-          if [[ -z "$IP_ADDRESS" ]]; then
-            echo "ERROR: IP_ADDRESS secret is missing or empty."
-            exit 1
-          fi
-          if [[ ! "$IP_ADDRESS" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-            echo "ERROR: IP_ADDRESS must be a valid IPv4 address."
-            exit 1
-          fi
-          IFS=. read -r o1 o2 o3 o4 <<< "$IP_ADDRESS"
-          for octet in "$o1" "$o2" "$o3" "$o4"; do
-            if (( octet < 0 || octet > 255 )); then
-              echo "ERROR: IP_ADDRESS must be a valid IPv4 address."
-              exit 1
-            fi
-          done
           host_dir="deployment/modules/hosts/$TARGET_HOST"
           if [[ ! -f "$host_dir/configuration.nix" || ! -f "$host_dir/_hardware-configuration.nix" ]]; then
             echo "ERROR: Host '$TARGET_HOST' is not bootstrapped yet. Run the bootstrap workflow first."
@@ -74,87 +52,25 @@ jobs:
             echo "ERROR: Host '$TARGET_HOST' does not have an agenix key registered."
             exit 1
           fi
-    
-      - name: Set up Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-25.11
-      
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_ROOT_KEY }}" > ~/.ssh/ed25519
-          chmod 600 ~/.ssh/ed25519
-          ssh-keyscan -H ${{ secrets.IP_ADDRESS }} >> ~/.ssh/known_hosts
-          echo "${{ secrets.SSH_AGENIX_KEY }}" > ~/.ssh/agenix
-          chmod 600 ~/.ssh/agenix
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Set up Nix, SSH, and git
+        uses: ./.github/actions/setup-deploy
+        with:
+          ip-address: ${{ secrets.IP_ADDRESS }}
+          ssh-root-key: ${{ secrets.SSH_ROOT_KEY }}
+          ssh-agenix-key: ${{ secrets.SSH_AGENIX_KEY }}
 
       - name: Encrypt secrets with agenix
-        env:
-          ALL_VARS: ${{ toJSON(vars) }}
-          ALL_SECRETS: ${{ toJSON(secrets) }}
-        run: |
-          set -euo pipefail
-          required_vars=$(grep -oE '\${vars\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{vars\.//; s/\}$//' | sort -u || true)
-          required_secrets=$(grep -oE '\${secrets\.[A-Za-z0-9_]+}' deployment/.env.template | sed -E 's/^\$\{secrets\.//; s/\}$//' | sort -u || true)
-          missing=0
-          for key in $required_vars; do
-            value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_VARS")
-            if [[ -z "$value" ]]; then
-              echo "ERROR: Missing environment variable '$key' referenced in deployment/.env.template."
-              missing=1
-            fi
-          done
-          for key in $required_secrets; do
-            value=$(jq -r --arg k "$key" '.[$k] // empty' <<< "$ALL_SECRETS")
-            if [[ -z "$value" ]]; then
-              echo "ERROR: Missing secret '$key' referenced in deployment/.env.template."
-              missing=1
-            fi
-          done
-          if [[ "$missing" -ne 0 ]]; then
-            exit 1
-          fi
-          cp deployment/.env.template .env.rendered
-
-          # Replace ${vars.KEY} from ALL_VARS
-          jq -r 'to_entries[] | "\(.key)\t\(.value)"' <<< "$ALL_VARS" | \
-          while IFS=$'\t' read -r k v; do
-            sed -i "s|\${vars\.${k}}|${v}|g" .env.rendered
-          done
-
-          # Replace ${secrets.KEY} from ALL_SECRETS
-          jq -r 'to_entries[] | "\(.key)\t\(.value)"' <<< "$ALL_SECRETS" | \
-          while IFS=$'\t' read -r k v; do
-            sed -i "s|\${secrets\.${k}}|${v}|g" .env.rendered
-          done
-
-          if grep -qE '\${(vars|secrets)\.[A-Za-z0-9_]+}' .env.rendered; then
-            echo "ERROR: Unresolved placeholders remain in rendered .env:"
-            grep -oE '\${(vars|secrets)\.[A-Za-z0-9_]+}' .env.rendered | sort -u
-            exit 1
-          fi
-
-          cd deployment/secrets
-          rm -f .env.age
-          nix run github:ryantm/agenix -- -e .env.age -i ~/.ssh/agenix < ../../.env.rendered
-          shred -u ../../.env.rendered
-
-          if [[ ! -s .env.age ]]; then
-            echo "ERROR: .env.age was not created or is empty" && exit 1
-          fi
-          echo "Successfully created .env.age ($(wc -c < .env.age) bytes)"
+        uses: ./.github/actions/encrypt-secrets
+        with:
+          vars-json: ${{ toJSON(vars) }}
+          secrets-json: ${{ toJSON(secrets) }}
 
       - name: Commit encrypted secrets
         run: |
           git add .
           git commit -m "actions($TARGET_HOST): Update encrypted secrets for $TARGET_HOST"
-      
+
       - name: Push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
