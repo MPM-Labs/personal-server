@@ -25,7 +25,7 @@
       virtualHosts."jonas.baugerud.no".extraConfig = ''
         reverse_proxy http://localhost:3000
       '';
-      virtualHosts."etasjefest.jostilim.com".extraConfig = ''
+      virtualHosts."jostilimleverer.club".extraConfig = ''
         reverse_proxy http://localhost:5000
       '';
     };
