@@ -12,12 +12,12 @@
 
     services.portfolio = {
       enable = true;
-      environmentFiles = [ "/run/secrets/.env" ];
+      environmentFiles = [ "/run/agenix/.env" ];
     };
 
     services."drinks-app" = {
       enable = true;
-      environmentFiles = [ "/run/secrets/.env" ];
+      environmentFiles = [ "/run/agenix/.env" ];
     };
 
     services.caddy ={
