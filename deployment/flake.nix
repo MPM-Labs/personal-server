@@ -9,7 +9,7 @@
     import-tree.url = "github:vic/import-tree";
     agenix.url = "github:ryantm/agenix";
     portfolio.url = "github:MPM-Labs/portfolio";
-    ef-jsl.url = "github:MrProgrammerMan/ef-jsl"
+    ef-jsl.url = "github:MrProgrammerMan/ef-jsl";
   };
 
   outputs = inputs:
