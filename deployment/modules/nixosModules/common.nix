@@ -7,9 +7,15 @@
       app-user
       ssh-root
       inputs.portfolio.nixosModules.default
+      inputs.ef-jsl.nixosModules.default
     ];
 
     services.portfolio = {
+      enable = true;
+      environmentFiles = [ "/run/secrets/.env" ];
+    };
+
+    services."drinks-app" = {
       enable = true;
       environmentFiles = [ "/run/secrets/.env" ];
     };
@@ -18,6 +24,9 @@
       enable = true;
       virtualHosts."jonas.baugerud.no".extraConfig = ''
         reverse_proxy http://localhost:3000
+      '';
+      virtualHosts."etasjefest.jostilim.com".extraConfig = ''
+        reverse_proxy http://localhost:5000
       '';
     };
 
