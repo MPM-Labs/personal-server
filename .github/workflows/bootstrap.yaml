@@ -140,6 +140,7 @@ jobs:
           host: ${{ secrets.IP_ADDRESS }}
           username: root
           key: ${{ secrets.SSH_ROOT_KEY }}
+          command_timeout: 1h
           script: |
             set -euo pipefail
             nixos-rebuild switch --show-trace --flake github:${{ github.repository }}/${{ steps.deployment_ref.outputs.ref }}?dir=deployment#${{ inputs.environment }}
