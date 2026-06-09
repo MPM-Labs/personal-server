@@ -15,7 +15,7 @@
       environmentFiles = [ "/run/agenix/.env" ];
     };
 
-    services.caddy ={
+    services.caddy = {
       enable = true;
       virtualHosts."jonas.baugerud.no".extraConfig = ''
         reverse_proxy http://localhost:3000
