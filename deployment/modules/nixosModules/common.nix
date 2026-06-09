@@ -15,18 +15,10 @@
       environmentFiles = [ "/run/agenix/.env" ];
     };
 
-    services."drinks-app" = {
-      enable = true;
-      environmentFiles = [ "/run/agenix/.env" ];
-    };
-
     services.caddy ={
       enable = true;
       virtualHosts."jonas.baugerud.no".extraConfig = ''
         reverse_proxy http://localhost:3000
-      '';
-      virtualHosts."jostilimleverer.club".extraConfig = ''
-        reverse_proxy http://localhost:5000
       '';
     };
 
