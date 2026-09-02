@@ -355,19 +355,36 @@
         "fenix": "fenix",
         "flake-parts": "flake-parts_3",
         "import-tree": "import-tree_3",
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_4",
+        "process-compose-flake": "process-compose-flake",
+        "services-flake": "services-flake"
       },
       "locked": {
-        "lastModified": 1778437988,
-        "narHash": "sha256-g0WkEVx8tuKIKiSbN1YCQWA+G5l4Li6U3XU8L6+Vsvg=",
+        "lastModified": 1781007559,
+        "narHash": "sha256-myXuNqLQYKS6EFR9nszJ3d5ueXp0a+V1oML6uOgQf4c=",
         "owner": "MPM-Labs",
         "repo": "portfolio",
-        "rev": "d1a5119778196d9691bb3323ed577612da1d1178",
+        "rev": "fd093618a4bad02873b1a4a3d8c9c6f0628f36e3",
         "type": "github"
       },
       "original": {
         "owner": "MPM-Labs",
         "repo": "portfolio",
+        "type": "github"
+      }
+    },
+    "process-compose-flake": {
+      "locked": {
+        "lastModified": 1767863885,
+        "narHash": "sha256-XXekPAxzbv1DmHFo3Elmj/vDnvWc1V0jdDUvM0/Wf7k=",
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "rev": "99bea96cf269cfd235833ebdf645b567069fd398",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
         "type": "github"
       }
     },
@@ -396,6 +413,21 @@
         "owner": "rust-lang",
         "ref": "nightly",
         "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "services-flake": {
+      "locked": {
+        "lastModified": 1780343091,
+        "narHash": "sha256-WPuSxRtCk9Qe0jWMbGMRZjFBhyFDxcrOiBIXS9feZrQ=",
+        "owner": "juspay",
+        "repo": "services-flake",
+        "rev": "0855711d53039af2ffb725a6b00d3ad0f88880e3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "juspay",
+        "repo": "services-flake",
         "type": "github"
       }
     },
