@@ -1,5 +1,8 @@
 { self, inputs, ... }: {
-  flake.nixosModules.common = { config, ... }: {
+  flake.nixosModules.common = { config, ... }:
+  let
+    pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+  in {
     imports = with self.nixosModules; [
       bootstrap
       secrets
@@ -13,6 +16,47 @@
     services.portfolio = {
       enable = true;
       environmentFiles = [ "/run/agenix/.env" ];
+    };
+
+    systemd.services.portfolio = {
+      after = [ "postgresql.service" "network-online.target" ];
+      requires = [ "postgresql.service" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        User = "app";
+        Group = "app";
+      };
+    };
+
+    services.postgresql ={
+      enable = true;
+      package = pkgs.postgresql_18;
+      ensureDatabases = [
+        "db"
+      ];
+    };
+
+    systemd.network.wait-online.enable = true;
+
+    users.users.postgres.extraGroups = [ "app" ];
+
+    systemd.services.postgresql = {
+      postStart = ''
+        set -a
+        source /run/agenix/.env
+        set +a
+        ${config.services.postgresql.package}/bin/psql -d postgres <<EOF
+        DO \$\$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = '$POSTGRES_USER') THEN
+            ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';
+          ELSE
+            CREATE ROLE $POSTGRES_USER WITH LOGIN PASSWORD '$POSTGRES_PASSWORD';
+          END IF;
+        END
+        \$\$;
+        EOF
+      '';
     };
 
     services.caddy = {
