@@ -85,11 +85,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1793698823,
-        "narHash": "sha256-XfQ0tIBe4Bm93HBFQ1lWHQwJ7Kcy3Bbkdj/RWUHU87E=",
+        "lastModified": 1793871565,
+        "narHash": "sha256-4c+pZ4AJvlKElS4oXeIZnuGvq9J+4DdCkPJnDq806bU=",
         "owner": "MrProgrammerMan",
         "repo": "ef-jsl",
-        "rev": "835ead00ae4f6020d4cc9a281167d34a63f10e81",
+        "rev": "bd87832b2e757838ff3c5c3c8b6a12e182296025",
         "type": "github"
       },
       "original": {
