@@ -14,7 +14,7 @@
     ];
 
     services."drinks-app" = {
-      enable = true;
+      enable = false;
       environmentFiles = [ "/run/agenix/.env" ];
     };
 
@@ -69,9 +69,9 @@
       virtualHosts."jonas.baugerud.no".extraConfig = ''
         reverse_proxy http://localhost:3000
       '';
-      virtualHosts."jostilimleverer.club".extraConfig = ''
-        reverse_proxy http://localhost:5000
-      '';
+      #virtualHosts."jostilimleverer.club".extraConfig = ''
+      #  reverse_proxy http://localhost:5000
+      #'';
     };
 
     networking.firewall.allowedTCPPorts = [ 80 443 ];
