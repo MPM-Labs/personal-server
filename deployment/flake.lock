@@ -360,11 +360,11 @@
         "services-flake": "services-flake"
       },
       "locked": {
-        "lastModified": 1789892559,
-        "narHash": "sha256-s6qPsdWaPRCdwuN78Mt7dm8O6RLnuUCTxVZha+LRlRM=",
+        "lastModified": 1794385224,
+        "narHash": "sha256-c2K7zNOYZ/1lI1ZK8LEfYeaG+y8xGzxg9w4lEK/hym8=",
         "owner": "MPM-Labs",
         "repo": "portfolio",
-        "rev": "c816dfd18eabfb20d0bbf5e9c6faf9cc2a23e13c",
+        "rev": "4abfe291a48df8df9b7927e19a6c1a094f0313ec",
         "type": "github"
       },
       "original": {
